@@ -1,0 +1,10 @@
+*.pyc
+venv/
+.idea/
+*~
+*.p
+local_settings.py
+*.sqlite3
+zo/
+*migrations*
+.directory
