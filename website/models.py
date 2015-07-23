@@ -10,6 +10,8 @@ class Billboard(models.Model):
     user = models.ForeignKey(User, null=True, blank=True)
     upvotes = models.ImageField(default=0)
     sign = models.CharField(max_length=100)
+    # Adding image after testing and creating with PIL, it would be dynamically generated using the name and sign of the billboard
+    image = models.ImageField(upload_to='billboard')
 
     def __unicode__(self):
         return self.user
