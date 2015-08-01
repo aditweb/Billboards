@@ -24,6 +24,7 @@ SECRET_KEY = 'tx%xm0+kt2ka9o_^ez5$&^fexw1dm$+7s&vwi1pi76fhbp!1!9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -79,6 +80,18 @@ TEMPLATES = [
     },
 ]
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.request",
+    "django.core.context_processors.csrf",
+    'django.contrib.auth.context_processors.auth',
+     # allauth specific context processors
+    "allauth.account.context_processors.account",
+    "allauth.socialaccount.context_processors.socialaccount",
+)
+
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
@@ -129,3 +142,18 @@ STATIC_ROOT = BASE_DIR+'/static/'
 STATIC_URL = '/static/'
 
 SITE_ID = 1
+
+SOCIAL_AUTH_PIPELINE = (
+'social_auth.backends.pipeline.social.social_auth_user',
+'social_auth.backends.pipeline.associate.associate_by_email',
+'social_auth.backends.pipeline.misc.save_status_to_session',
+'people.pipeline.redirect_to_get_phonenumber_form',
+'people.pipeline.phonenumber',
+'people.pipeline.save_new_persons_data',
+'social_auth.backends.pipeline.social.associate_user',
+'social_auth.backends.pipeline.social.load_extra_data',
+'social_auth.backends.pipeline.user.update_user_details',
+)
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
