@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from views import *
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
-    url(r'^$', home, name='home'),
+    url(r'^$', csrf_exempt(home), name='home'),
     url(r'^board/$', show_billboard, name='show_billboard'),
-    url(r'^board/(?P<bid>[-\w]+)$', show_billboard, name='show_billboard'),
+    url(r'^board/(?P<bid>[-\w]+)/$', csrf_exempt(show_billboard) , name='show_billboard'),
+    url(r'^explore/$', csrf_exempt(explore_more)),
+    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}),
 ]

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Billboards</title>
+</head>
+
+    <!--<link rel = "stylesheet" href="css/bootstrap.min.css" />-->
+<link rel = "stylesheet" href="/static/style/custom.css" />
+<link rel="stylesheet" type="text/css" href="/static/style/gallery.css" />
+<link rel="stylesheet" type="text/css" href="/static/style/style3.css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+	<script src="/static/js/modernizr.custom.js"></script>
+</head>
+	<body>
+    <header>
+    <img src="/static/img/zo.svg" >
+		<center><h1>Explore and get inspired by other people..!</h1></center>
+        </header>
+			<div id="grid-gallery" class="grid-gallery">
+				<section class="grid-wrap">
+					<ul class="grid">
+						<li class="grid-sizer"></li><!-- for Masonry column width -->
+                        {% for board in boards %}
+						<li>
+							<figure>
+								<img src={{board.image.url}} alt="img01"/>
+								<!-- <figcaption><h3>Letterpress asymmetrical</h3><p>Chillwave hoodie ea gentrify aute sriracha consequat.</p></figcaption> -->
+							</figure>
+						</li>
+                        {% endfor %}
+					</ul>
+				</section><!-- // grid-wrap -->
+				<section class="slideshow">
+					<ul>
+                        {% for board in boards %}
+						<li>
+							<figure>
+								<img src={{board.image.url}} alt="img02"/>
+                                <center><button class="btn btn-danger btn-lg  btn_vote " id= {{board.id}} onclick="return submit_vote(this)" style="background-color:">
+          					<span class="glyphicon glyphicon-heart icon_hover "></span> <strong>Vote <span class="number" id="upvotes-{{board.id}}">{{board.upvotes}}</span></strong>
+        				</button></center>
+							</figure>
+						</li>
+                        {% endfor %}
+					</ul>
+					<nav>
+						<span class="nav-prev"><img src="/static/img/arrow-left.png" /></span>
+						<span class="nav-next"><img src="/static/img/arrow-right.png" /></span>
+						<span class="nav-close"><img src="/static/img/close.png" /></span>
+					</nav>
+				</section><!-- // slideshow -->
+			</div><!-- // grid-gallery -->
+			
+		</div>
+		<script src="/static/js/imagesloaded.pkgd.min.js"></script>
+		<script src="/static/js/masonry.pkgd.min.js"></script>
+		<script src="/static/js/classie.js"></script>
+		<script src="/static/js/cbpGridGallery.js"></script>
+		<script>
+			new CBPGridGallery( document.getElementById( 'grid-gallery' ) );
+		</script>
+
+<script>
+function submit_vote(element){
+            var upvote = 'True';
+            var bid = element.id;
+            console.log(bid);
+            var data = {'upvote':upvote, 'bid':bid};
+            console.log(data);
+            $.ajax({
+              type: "POST",
+              url: '/explore/',
+              data: data,
+              success: function(result){
+                result = JSON.parse(result);
+                if ((result['status']=='success') && (result['upvote']=='+1')){
+                    upvote = document.getElementById("upvotes-" + result.board_id).innerHTML;
+                    upvote = parseInt(upvote);
+                    upvote = upvote + 1;
+                    $('#upvotes-'+result.board_id).empty();
+                    $('#upvotes-'+result.board_id).append(upvote);
+                }
+                if ((result['status']=='success') && (result['upvote']=='-1')){
+                    upvote = document.getElementById("upvotes-" + result.board_id).innerHTML;
+                    upvote = parseInt(upvote);
+                    upvote = upvote - 1;
+                    $('#upvotes-'+result.board_id).empty();
+                    $('#upvotes-'+result.board_id).append(upvote);
+                }
+              },
+            });
+            return false;
+        }
+
+</script>
+
+</body>
+</html>
