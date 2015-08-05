@@ -23,5 +23,6 @@ urlpatterns = [
     url(r'^board/$', show_billboard, name='show_billboard'),
     url(r'^board/(?P<bid>[-\w]+)/$', csrf_exempt(show_billboard) , name='show_billboard'),
     url(r'^explore/$', csrf_exempt(explore_more)),
+    url(r'^image_data/$', csrf_exempt(image_data)),
     url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}),
 ]

@@ -58,19 +58,16 @@ def show_billboard(request, bid=False):
                 except Exception as e:
                     return HttpResponse(json.dumps({'status': 'failure', 'message': '[Error] ' + str(e)}))
             if 'upvote' in request.POST:
-                if not check_if_already_upvoted(request.user, request.POST['bid']):
-                    userprofile = UserProfile.objects.filter(user=request.user).first()
-                    userprofile.upvoted_boards.add(Billboard.objects.get(id=request.POST['bid']))
-                    userprofile.save()
-                    Billboard.objects.filter(id=request.POST['bid']).update(upvotes=F('upvotes') + 1)
-                    return HttpResponse(json.dumps({'status': 'success', 'upvote': '+1', 'board_id':request.POST['bid']}))
-                else:
-                    userprofile = UserProfile.objects.filter(user=request.user).first()
-                    userprofile.upvoted_boards.remove(Billboard.objects.get(id=request.POST['bid']))
-                    userprofile.save()
-                    Billboard.objects.filter(id=request.POST['bid']).update(upvotes=F('upvotes') - 1)
-                    return HttpResponse(json.dumps({'status': 'success', 'upvote': '-1', 'board_id':request.POST['bid']}))
-                return HttpResponse(json.dumps({'status': 'failed', 'message': 'Upvote Not Updated'}))
+                try:
+                    if not check_if_already_upvoted(request.user, request.POST['bid']):
+                        userprofile = UserProfile.objects.filter(user=request.user).first()
+                        userprofile.upvoted_boards.add(Billboard.objects.get(id=request.POST['bid']))
+                        userprofile.save()
+                        Billboard.objects.filter(id=request.POST['bid']).update(upvotes=F('upvotes') + 1)
+                        return HttpResponse(json.dumps({'status': 'success', 'upvote': '+1', 'board_id':request.POST['bid']}))
+                    return HttpResponse(json.dumps({'status': 'failed', 'message': 'Upvote Not Updated'}))
+                except Exception,e:
+                    print e
         more_boards = Billboard.objects.filter().select_related('user').exclude(user=request.user)[:3]
         authenticated = request.user.is_authenticated()
         user = UserProfile.objects.filter(user= request.user).first()
@@ -87,6 +84,7 @@ def show_billboard(request, bid=False):
             board = Billboard.objects.filter(id=bid).first()
             return render(request, 'website/billboard.html', {'more_boards': more_boards, 'board': board, 'authenticated': authenticated, 'upvoted': upvoted, 'user': user})
         board = Billboard.objects.filter(user=request.user).first()
+        upvoted = check_if_already_upvoted(request.user, board.id)
         return render(request, 'website/billboard.html', {'more_boards': more_boards, 'board': board, 'authenticated': authenticated, 'upvoted': upvoted, 'user': user})
     else:
         return HttpResponseRedirect('/')
@@ -129,15 +127,18 @@ def explore_more(request):
                         userprofile.save()
                         Billboard.objects.filter(id=request.POST['bid']).update(upvotes=F('upvotes') + 1)
                         return HttpResponse(json.dumps({'status': 'success', 'upvote': '+1', 'board_id':request.POST['bid']}))
-                    else:
-                        userprofile = UserProfile.objects.filter(user=request.user).first()
-                        userprofile.upvoted_boards.remove(Billboard.objects.get(id=request.POST['bid']))
-                        userprofile.save()
-                        Billboard.objects.filter(id=request.POST['bid']).update(upvotes=F('upvotes') - 1)
-                        return HttpResponse(json.dumps({'status': 'success', 'upvote': '-1', 'board_id':request.POST['bid']}))
                     return HttpResponse(json.dumps({'status': 'failed', 'message': 'Upvote Not Updated'}))
             boards = Billboard.objects.filter().select_related('user').exclude(user=request.user)
-            return render(request, 'website/explore.html', {'boards': boards})
+            data = []
+            for board in boards:
+                dict = {}
+                dict['id'] = board.id
+                dict['upvoted'] = check_if_already_upvoted(request.user, board.id)
+                if board.image:
+                    dict['img'] = board.image.url
+                dict['upvotes'] = board.upvotes
+                data.append(dict)
+            return render(request, 'website/explore.html', {'boards': data})
     else:
         return HttpResponseRedirect('/')
 
@@ -151,3 +152,18 @@ def thumbnail(image_list):
         image,
         ((size[0] - image.size[0]) / 2, (size[1] - image.size[1]) / 2))
     return background
+
+
+def image_data(request):
+    print 'm in'
+    if request.method == 'POST':
+        print 'post'
+        upvote = False
+        userprofile = UserProfile.objects.filter(user=request.user).first()
+        billboard = Billboard.objects.get(id=request.POST['bid'])
+        if billboard in userprofile.upvoted_boards.all():
+            upvote = True
+        user = userprofile.first_name + ' ' + userprofile.last_name
+        upvotes_number = billboard.upvotes
+        src= billboard.image.url
+        return HttpResponse(json.dumps({'upvote': upvote, 'upvotes_number': upvotes_number, 'user':user, 'src': src, 'id':billboard.id}))

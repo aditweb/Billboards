@@ -68,15 +68,27 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
                     {% if board.image %}
                         <img src="{{board.image.url}}" class="img-responsive img-rounded"/>
                         <div class="button_div">
-                            <label  class="btn btn-default  btn_vote " id= "vote" onclick="return submit(this)">
-                                <span id="love" onClick="loving('love')" class="glyphicon glyphicon-heart icon_hover "></span> <strong>Vote <span class="number" id="upvotes-{{board.id}}">{{board.upvotes}}</span></strong>
-                            </label>
-                            <script>
-                                function loving(obj) {
-                                var el = document.getElementById(obj);
-                                el.style.color = '#F37254';
-                                }
-                            </script>
+                            {% if upvoted %}
+                                <label  class="btn btn-default  btn_vote ">
+                                    <span id="love" onClick="loving('love')" class="glyphicon glyphicon-heart icon_hover " style="backgorund-color:#F37254;"></span> <strong>Vote <span class="number">{{board.upvotes}}</span></strong>
+                                </label>
+                                <script>
+                                    function loving(obj) {
+                                    var el = document.getElementById(obj);
+                                    el.style.color = '#F37254';
+                                    }
+                                </script>
+                            {% else %}
+                                <label  class="btn btn-default  btn_vote " id= "vote" onclick="return submit(this)">
+                                <span id="love1" onClick="loving('love1')" class="glyphicon glyphicon-heart icon_hover " ></span> <strong>Vote <span class="number" id="upvotes-{{board.id}}">{{board.upvotes}}</span></strong>
+                                </label>
+                                <script>
+                                    function loving(obj) {
+                                    var el = document.getElementById(obj);
+                                    el.style.color = '#F37254';
+                                    }
+                                </script>
+                            {% endif%}
 
                         </div>
                     {% else %}
@@ -118,7 +130,7 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
                     {% for board in more_boards %}
                         {% if board.image  %}
                             <li class="col-md-4 col-sm-4 col-lg-4 col-xs-4">
-                                <img class="gallery img-responsive  img-rounded" src={{board.image.url}} id={{board.id}} alt={{board.upvotes}}>
+                                <img class="gallery img-responsive  img-rounded" src={{board.image.url}} id={{board.id}} alt={{board.upvotes}} onclick="return submit_image({{board.id}})">
                             </li>
                         {% endif %}
                     {% endfor %}
@@ -202,6 +214,7 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
         $('#myModal').modal('show');
         }
 
+
         function submit(element){
             if (element.id =='vote')
             {
@@ -230,13 +243,6 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
                     $('#upvotes-'+result.board_id).empty();
                     $('#upvotes-'+result.board_id).append(upvote);
                 }
-                if ((result['status']=='success') && (result['upvote']=='-1')){
-                    upvote = document.getElementById("upvotes-" + result.board_id).innerHTML;
-                    upvote = parseInt(upvote);
-                    upvote = upvote - 1;
-                    $('#upvotes-'+result.board_id).empty();
-                    $('#upvotes-'+result.board_id).append(upvote);
-                }
                 if ((result['status']=='success') && (result['message'])){
                     location.reload();
                 }
@@ -244,6 +250,8 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
             });
             return false;
         }
+
+
     function submit_vote(element){
             var upvote = 'True';
             var bid = element.id;
@@ -263,32 +271,72 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
                     $('#upvotes-'+result.board_id).empty();
                     $('#upvotes-'+result.board_id).append(upvote);
                 }
-                if ((result['status']=='success') && (result['upvote']=='-1')){
-                    upvote = document.getElementById("upvotes-" + result.board_id).innerHTML;
-                    upvote = parseInt(upvote);
-                    upvote = upvote - 1;
-                    $('#upvotes-'+result.board_id).empty();
-                    $('#upvotes-'+result.board_id).append(upvote);
-                }
               },
             });
             return false;
         }
-      window.fbAsyncInit = function() {
-        FB.init({
-          appId      : '820257721402863',
-          xfbml      : true,
-          version    : 'v2.4'
-        });
-      };
 
-      (function(d, s, id){
-         var js, fjs = d.getElementsByTagName(s)[0];
-         if (d.getElementById(id)) {return;}
-         js = d.createElement(s); js.id = id;
-         js.src = "//connect.facebook.net/en_US/sdk.js";
-         fjs.parentNode.insertBefore(js, fjs);
-       }(document, 'script', 'facebook-jssdk'));
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '820257721402863',
+      xfbml      : true,
+      version    : 'v2.4'
+    });
+  };
+
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+
+  function submit_image(id){
+        console.log(id);
+        $.post('/image_data/',{ bid:id}, function(result){
+            result = JSON.parse(result);
+            var img = '<img src="' + result.src + '" class="img-responsive"/>';
+            var id = result.id;
+            //var upvotes = $(this).attr('alt');
+            //var index = $(this).parent('li').index();
+            console.log(result);
+            var upvote = result.upvote;
+            console.log(upvote);
+            var vote = '';
+            if(upvote == true)
+            {
+                console.log('aditya');
+                vote = '<button type="button" class="btn btn-default" data-dismiss="modal">CANCEL</button>';
+                vote += '<a href="#" class="btn btn-info btn_vote1"  onclick="return submit_vote(this)" id=' + id +'>';
+                vote += '<span class="glyphicon glyphicon-heart" style="background-color:#26547;"></span> <strong>Vote <span class="number" id="upvotes-'+id+'">';
+                vote += result.upvotes_number + '</span></strong></a>';
+            }
+            else{
+                vote = '<button type="button" class="btn btn-default" data-dismiss="modal">CANCEL</button>';
+                vote += '<a href="#" class="btn btn-info btn_vote1"  onclick="return submit_vote(this)" id=' + id +'>';
+                vote += '<span class="glyphicon glyphicon-heart icon_hover "></span> <strong>Vote <span class="number" id="upvotes-'+id+'">';
+                vote += result.upvotes_number + '</span></strong></a>';
+            }
+            var user = result.user;
+            console.log('after');
+            $('#myModal2').modal('show');
+            $('#myModal2').on('shown.bs.modal', function(){
+                $('#myModal2 .modal-body').html(img);
+                $('#myModal2 .modal-footer').html(vote);
+                $('#myModal2 .modal-title').html(user);
+            });
+            $('#myModal2').on('hidden.bs.modal', function(){
+                $('#myModal2 .modal-body').html('');
+                $('#myModal2 .modal-footer').html('');
+                $('#myModal2 .modal-title').html('');
+            });
+        })
+
+  }
     </script>
     <script language="JavaScript">
     <!--
@@ -297,32 +345,6 @@ Chances to win the new I-pad mini, free Zostel nights and many more surprises in
         }
         //-->
     </script>
-<script>
-$(document).ready(function(){
-           $('li img').on('click',function(){
-                var src = $(this).attr('src');
-                var img = '<img src="' + src + '" class="img-responsive"/>';
-                var id = $(this).attr('id');
-                var upvotes = $(this).attr('alt');
-				var index = $(this).parent('li').index();
-				var vote = '<button type="button" class="btn btn-default" data-dismiss="modal">CANCEL</button>';
-                vote += '<a href="#" class="btn btn-info btn_vote1"  onclick="return submit_vote(this)" id=' + id +'>';
-                vote += '<span class="glyphicon glyphicon-heart icon_hover "></span> <strong>Vote <span class="number" id="upvotes-'+id+'">';
-                vote += upvotes + '</span></strong></a>';
 
-                console.log('after');
-                $('#myModal2').modal('show');
-                $('#myModal2').on('shown.bs.modal', function(){
-                    $('#myModal2 .modal-body').html(img);
-                    $('#myModal2 .modal-footer').html(vote);
-                });
-                $('#myModal2').on('hidden.bs.modal', function(){
-                    $('#myModal2 .modal-body').html('');
-                    $('#myModal2 .modal-footer').html('');
-                });
-           });
-
-        })
-</script>
 </body>
 </html>
